@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Bot Sonax</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            line-height: 1.6;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        h1 {
+            color: #0d6efd;
+            margin-top: 0;
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 1rem;
+        }
+        #status-box {
+            background-color: #f7f7f7;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        #status-message {
+            color: #333;
+        }
+        #control-button {
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            width: 100%;
+            color: white;
+        }
+        #control-button:active {
+            transform: scale(0.98);
+        }
+        
+        .status-ativo {
+            background-color: #28a745; 
+        }
+        .status-ativo:hover {
+            background-color: #218838;
+        }
+        .status-pausado {
+            background-color: #dc3545; 
+        }
+        .status-pausado:hover {
+            background-color: #c82333;
+        }
+        .status-aguardando {
+            background-color: #0d6efd; 
+        }
+        .status-aguardando:hover {
+            background-color: #0b5ed7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Painel do Bot Sonax</h1>
+        <div id="status-box">
+            Status: <span id="status-message">Carregando...</span>
+        </div>
+        <button id="control-button" class="status-aguardando" onclick="toggleBot()">
+            Ativar Bot
+        </button>
+        <p style="font-size: 0.8rem; color: #666; margin-top: 1.5rem;">
+            <b>Nota:</b> Faça o login manual na janela do Chrome que abriu antes de ativar o bot.
+        </p>
+    </div>
+
+    <script>
+        const statusMessageEl = document.getElementById('status-message');
+        const controlButtonEl = document.getElementById('control-button');
+
+        // on or off do bot
+        async function toggleBot() {
+            try {
+                const response = await fetch('/toggle', { method: 'POST' });
+                const data = await response.json();
+                updateUI(data.status, data.ativo);
+            } catch (error) {
+                updateUI("Erro de conexao com o servidor.", false);
+            }
+        }
+
+        // update UI based on status
+        function updateUI(status, ativo) {
+            statusMessageEl.textContent = status;
+            
+            // Remove all status classes
+            controlButtonEl.classList.remove('status-ativo', 'status-pausado', 'status-aguardando');
+
+            if (status.startsWith("CRASH")) {
+                controlButtonEl.textContent = "BOT PARADO - REINICIE";
+                controlButtonEl.classList.add('status-pausado');
+                controlButtonEl.disabled = true;
+            } else if (ativo) {
+                controlButtonEl.textContent = "Pausar Bot";
+                controlButtonEl.classList.add('status-ativo');
+            } else {
+                controlButtonEl.textContent = "Reativar Bot";
+                controlButtonEl.classList.add('status-pausado');
+            }
+        }
+
+        // periodically fetch status from server
+        async function fetchStatus() {
+            try {
+                const response = await fetch('/status');
+                if (!response.ok) {
+                    throw new Error('Servidor offline');
+                }
+                const data = await response.json();
+                
+                if (controlButtonEl.textContent !== 'Ativar Bot') {
+                    updateUI(data.status, data.ativo);
+                } else {
+                    statusMessageEl.textContent = data.status;
+                }
+            } catch (error) {
+                statusMessageEl.textContent = "Perda de conexao com o servidor...";
+                controlButtonEl.classList.remove('status-ativo');
+                controlButtonEl.classList.add('status-pausado');
+                controlButtonEl.textContent = "Erro de Conexao";
+                controlButtonEl.disabled = true;
+            }
+        }
+
+        // Inicia a verificação periódica do status
+        setInterval(fetchStatus, 2000);
+        // Busca o status inicial logo ao carregar a página
+        fetchStatus();
+    </script>
+</body>
+</html>
