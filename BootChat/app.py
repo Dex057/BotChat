@@ -9,21 +9,19 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, StaleElementReferenceException, NoSuchElementException, WebDriverException
 
-# --- Configuração ---
 PATH_DRIVER = r"C:\drivers\chromedriver.exe"
 URL_BASE = "https://chat.sonax.net.br/"
 URL_CHAT = "https://chat.sonax.net.br/app/chat"
 
-# --- Credenciais ---
 LOGIN_EMAIL = "atendente02@amazoninf.com.br"
 LOGIN_SENHA = "Amazon@2025"
 
-# --- XPaths Login ---
+
 XPATH_CAMPO_EMAIL = "/html/body/app-root/app-login/div/div[1]/div/div[1]/input"
 XPATH_CAMPO_SENHA = "/html/body/app-root/app-login/div/div[1]/div/div[2]/input"
 XPATH_BOTAO_ENTRAR = "/html/body/app-root/app-login/div/div[1]/div/button"
 
-# --- XPaths Chat (Confirmados) ---
+
 XPATH_CONTADOR_BOT = "/html/body/app-root/app-layout/ng-sidebar-container/div/div/app-chat/app-content/main/div/div/div[1]/app-portlet/div/div/div/div[2]/div[1]/span[1]/div/span"
 XPATH_CONTADOR_FILA = "/html/body/app-root/app-layout/ng-sidebar-container/div/div/app-chat/app-content/main/div/div/div[1]/app-portlet/div/div/div/div[2]/div[1]/span[2]/div/span"
 XPATH_ABA_FILA = "/html/body/app-root/app-layout/ng-sidebar-container/div/div/app-chat/app-content/main/div/div/div[1]/app-portlet/div/div/div/div[2]/div[1]/span[2]"
@@ -32,7 +30,6 @@ XPATH_PRIMEIRO_CHAT_FILA = r"/html/body/app-root/app-layout/ng-sidebar-container
 XPATH_BOTAO_ASSUMIR = "//button[contains(., 'Assumir Atendimento')]"
 XPATH_BOTAO_CONFIRMA_SIM = "(//button[contains(., 'SIM')])[last()]"
 
-# --- Aplicação Flask e Estado Global ---
 app = Flask(__name__)
 driver = None
 wait = None
@@ -98,32 +95,32 @@ def bot_loop():
                 time.sleep(1) 
                 continue 
 
-            # --- LÓGICA DE DECISÃO ---
+            
             if fila_count > 0:
                 original_status = status_message # Guarda o status caso precise restaurar
                 try:
                     current_step = "iniciar sequencia"
                     status_message = f"Chat na Fila! ({fila_count}). A iniciar sequencia..."
 
-                    # Passo 1: Clicar na Aba Fila
+                    
                     current_step = "clicar Aba Fila"
                     wait.until(EC.element_to_be_clickable((By.XPATH, XPATH_ABA_FILA))).click()
                     time.sleep(0.3)
+                
                     
-                    # Passo 1.5: Esperar que a lista de chats apareça
                     current_step = "esperar Lista"
                     wait.until(EC.visibility_of_element_located((By.XPATH, XPATH_LISTA_CONTAINER)))
                     
-                    # Passo 2: Clicar no Primeiro Contacto da Lista
+                    
                     current_step = "clicar Contacto"
                     wait.until(EC.element_to_be_clickable((By.XPATH, XPATH_PRIMEIRO_CHAT_FILA))).click()
                     time.sleep(2) 
                     
-                    # Passo 3: Clicar em "Assumir Atendimento"
+                    
                     current_step = "clicar Assumir"
                     wait.until(EC.element_to_be_clickable((By.XPATH, XPATH_BOTAO_ASSUMIR))).click()
                     
-                    # Passo 4: Clicar em "Sim" na confirmação
+                    
                     current_step = "clicar SIM"
                     wait.until(EC.element_to_be_clickable((By.XPATH, XPATH_BOTAO_CONFIRMA_SIM))).click()
                     
@@ -171,7 +168,7 @@ def bot_loop():
             print(f"Erro inesperado ({current_step}): {e}") 
             time.sleep(2)
 
-# --- Rotas Flask ---
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -189,7 +186,7 @@ def toggle_bot():
     toggle_bot_status()
     return jsonify({"status": status_message, "ativo": bot_ativo})
 
-# --- Início ---
+
 if __name__ == "__main__":
     print("Iniciando navegador e login...")
     if not setup_driver_and_login():
