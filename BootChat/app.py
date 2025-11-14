@@ -13,8 +13,8 @@ PATH_DRIVER = r"C:\drivers\chromedriver.exe"
 URL_BASE = "https://chat.sonax.net.br/"
 URL_CHAT = "https://chat.sonax.net.br/app/chat"
 
-LOGIN_EMAIL = "atendente02@amazoninf.com.br"
-LOGIN_SENHA = "Amazon@2025"
+LOGIN_EMAIL = "atendente02@******.com.br"
+LOGIN_SENHA = "*********"
 
 
 XPATH_CAMPO_EMAIL = "/html/body/app-root/app-login/div/div[1]/div/div[1]/input"
